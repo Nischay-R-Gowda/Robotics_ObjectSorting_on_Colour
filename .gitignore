@@ -1,0 +1,22 @@
+# ROS 2 / colcon generated output
+/build/
+/install/
+/log/
+/logs/
+**/__pycache__/
+*.py[cod]
+
+# Local diagnostics and editor/backup snapshots
+*.log
+*.before*
+*.backup
+*backup*
+frames_*.gv
+frames_*.pdf
+
+# Superseded handoff/review snapshots (README.md and DEMO_COMMANDS.md are current)
+/PART2_REVIEW.txt
+/PART3_COMMANDS_REVIEW.txt
+/README_HANDOFF.txt
+/README_PART3_HANDOFF.txt
+

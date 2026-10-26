@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sorting workcell monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07151b;--p1:#0d2530;--line:#21414e;--tx:#e7f1f2;--mu:#8ea8b1;--live:#4fd1e3;--ok:#5fd39a;--warn:#f0b24a;--bad:#ff7d72;--acc:var(--mu);
+--sans:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;color-scheme:dark}
+body{margin:0;color:var(--tx);font:15px/1.55 var(--sans);min-height:100vh;background:radial-gradient(900px 500px at 85% -10%,#15505c66,transparent 60%),radial-gradient(700px 500px at 0 100%,#0f3a4a55,transparent 60%),var(--bg)}
+.app{display:grid;grid-template-columns:208px 1fr;min-height:100vh}
+aside{position:sticky;top:0;height:100vh;padding:22px 14px;display:flex;flex-direction:column;gap:26px;border-right:1px solid var(--line);background:linear-gradient(180deg,#0b202a,#08171d)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.01em}
+.mk{width:32px;height:32px;padding:6px;border-radius:9px;background:linear-gradient(145deg,#1d6f7c,#0f3f4c);stroke:#dff8fb;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav{display:grid;gap:4px}
+nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;color:var(--mu);text-decoration:none;position:relative;transition:color .2s,background .2s}
+.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+nav a:hover{color:var(--tx);background:#ffffff0a}
+nav a.on{color:var(--tx);background:#4fd1e31a}
+nav a.on::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--live)}
+.col{min-width:0}
+header{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;padding:20px 28px 0}
+h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+header p{margin:0;color:var(--mu);font-size:13.5px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+main{max-width:1120px;margin:0 auto;padding:18px 28px 60px;display:grid;gap:20px}
+h2{font-size:15px;margin:0 0 10px;font-weight:650;letter-spacing:-.005em}
+.card{background:linear-gradient(180deg,#ffffff08,#ffffff03),var(--p1);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+input,button{font:inherit;color:var(--tx);background:#ffffff0d;border:1px solid var(--line);border-radius:9px;padding:7px 13px}
+input{width:210px;font-family:var(--mono);font-size:13px}
+button{cursor:pointer;transition:transform .15s,background .2s,border-color .2s}
+button:hover{border-color:var(--live);background:#4fd1e314}button:active{transform:translateY(1px) scale(.98)}
+#btnConn{background:var(--live);color:#032229;border-color:var(--live);font-weight:650}
+button[aria-pressed=true]{background:var(--warn);color:#261700;border-color:var(--warn);font-weight:650}
+button:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.cmdStart{border-color:#5fd39a80}.cmdStop{border-color:#f0b24a80}.cmdEstop{color:#ffd5d1;border-color:#ff7d7299;background:#ff7d7218}.cmdReset{border-color:#4fd1e380}
+#cmdAck{max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:focus-visible{outline:2px solid var(--live);outline-offset:2px}
+.pill{padding:5px 12px;border-radius:99px;font-size:12.5px;background:#ffffff12;color:var(--mu);border:1px solid var(--line)}
+.pill.open{color:var(--ok);background:#5fd39a1c;border-color:#5fd39a55}.pill.demo{color:var(--warn);background:#f0b24a1c;border-color:#f0b24a55}
+#demoBanner{display:none;color:var(--warn);background:#f0b24a1a;border:1px solid #f0b24a66;border-radius:10px;padding:9px 16px;font-weight:600}
+#verdict{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr);gap:10px;padding:28px 26px 22px;overflow:hidden;border-color:color-mix(in srgb,var(--acc) 45%,var(--line));
+background:radial-gradient(520px 320px at 82% 45%,color-mix(in srgb,var(--acc) 26%,transparent),transparent 70%),linear-gradient(160deg,#143a47,#0b212b)}
+#verdict.ok{--acc:var(--ok)}#verdict.warn{--acc:var(--warn)}#verdict.bad{--acc:var(--bad)}#verdict.live{--acc:var(--live)}
+#vText{font-size:clamp(26px,3.4vw,40px);font-weight:700;letter-spacing:-.025em;line-height:1.1;margin:0 0 10px}
+#vSub{color:#b9ced4;margin:0 0 20px;max-width:56ch}
+#stages{display:flex;flex-wrap:wrap;gap:6px}
+.st{display:inline-flex;align-items:center;gap:6px;padding:4px 11px 4px 9px;border-radius:99px;border:1px solid var(--line);color:var(--mu);font-size:12.5px;background:#0000002e}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.st.done{color:var(--ok);border-color:#5fd39a55}
+.st.now{color:#02222a;background:var(--live);border-color:var(--live);font-weight:700;box-shadow:0 0 18px #4fd1e366}.st.now::before{opacity:1;animation:pulse 1.4s infinite}
+.st.fail{color:#2a0c09;background:var(--bad);border-color:var(--bad);font-weight:700}
+.ro{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:22px;padding-top:14px;border-top:1px solid #ffffff1a}
+.ro span{display:block;font-size:12px;color:var(--mu)}.ro b{font:500 18px var(--mono)}
+.g2{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px}
+.stack{display:grid;gap:20px;align-content:start}
+#camSec{padding:16px}
+canvas{width:100%;height:auto;display:block;background:#2b3138;border-radius:8px;aspect-ratio:4/3;box-shadow:0 0 0 5px #06121a,0 0 0 6px var(--line)}
+.cap{color:var(--mu);font-size:13px;margin:8px 0 0}h2 .cap{margin:0 0 0 8px;font:400 12px var(--mono)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0}dt{color:var(--mu)}dd{margin:0;font-family:var(--mono);font-size:14px}
+.tag{font-size:11.5px;padding:1px 8px;border-radius:99px;background:#f0b24a1f;color:var(--warn);margin-left:6px;font-family:var(--sans)}
+.plain{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 2px 0}
+table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:3px 12px 3px 0;font-weight:400;font-family:var(--mono);font-size:13.5px}th{color:var(--mu);font-family:var(--sans);font-size:12.5px}
+#log{max-height:200px;overflow:auto;font-size:13px}#log div{padding:5px 0;border-bottom:1px solid var(--line);font-family:var(--mono)}
+#toast{position:fixed;right:22px;bottom:22px;max-width:360px;padding:12px 16px;border-radius:12px;background:#0b2029f2;border:1px solid var(--line);box-shadow:0 18px 40px #0008;opacity:0;transform:translateY(10px);pointer-events:none;transition:.3s;z-index:9}#toast.on{opacity:1;transform:none}
+main>*{animation:rise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}@keyframes pulse{50%{opacity:.2}}
+@media(max-width:900px){.app{grid-template-columns:1fr}
+aside{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;padding:8px 10px;z-index:8;border-right:0;border-top:1px solid var(--line)}
+.brand{display:none}nav{display:flex;width:100%;justify-content:space-around}nav a span{display:none}nav a.on::before{left:10px;right:10px;top:-9px;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
+header{padding:16px 16px 0}main{padding:14px 16px 96px}#verdict,.g2{grid-template-columns:1fr}#toast{bottom:84px;right:12px}input{width:100%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* operational dashboard refresh */
+:root{--bg:#081117;--p1:#101d27;--line:#263b48;--tx:#edf4f6;--mu:#91a7b1;--live:#48c9d6;--ok:#59d6a0;--warn:#eab765;--bad:#ff776e;--sans:Inter,"Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",Consolas,monospace}
+body{background:radial-gradient(850px 420px at 80% -15%,#154b5838,transparent 65%),var(--bg);font-size:14px}
+.app{grid-template-columns:220px minmax(0,1fr)}aside{background:#0b1820;border-color:#1e313d;padding:24px 16px}.brand{font-size:15px;letter-spacing:.01em}nav{gap:6px}nav a{padding:10px 12px;border-radius:10px}nav a.on{background:#48c9d61a}
+header{align-items:flex-start;padding:24px 32px 0;gap:18px}h1{font-size:24px}header p{margin-top:5px}.ctl{max-width:1040px;justify-content:flex-end;gap:7px}.connect-group,.action-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.connect-group{padding-right:10px;border-right:1px solid var(--line)}.action-group{gap:6px}
+input,button{border-radius:10px;padding:8px 12px}input{width:185px}.pill{padding:6px 11px}.cmd-status{font:12px var(--mono);color:var(--mu);padding:0 4px;white-space:nowrap}
+#btnStart{font-weight:700}.cmdEstop{color:#ffd7d2;background:#ff776e12;border-color:#ff776e55}.cmdEstop:hover{border-color:var(--bad);background:#ff776e22}
+main{max-width:1500px;padding:24px 32px 56px;gap:18px}#demoBanner{margin-bottom:0}.card{border-radius:16px;padding:20px 22px;background:linear-gradient(150deg,#ffffff06,transparent 45%),var(--p1);box-shadow:0 12px 32px #00000012}
+#verdict{grid-template-columns:1fr;padding:28px 30px 22px;min-height:260px;background:radial-gradient(800px 360px at 100% 0%,color-mix(in srgb,var(--acc) 13%,transparent),transparent 75%),linear-gradient(150deg,#132d39,#0d1d27);border-color:#284651}
+.eyebrow{margin:0 0 8px;color:var(--live);font:600 10px/1.4 var(--mono);letter-spacing:.14em}#vText{font-size:clamp(27px,3vw,38px);max-width:24ch;margin-bottom:8px}#vSub{max-width:68ch;margin-bottom:16px}
+#stages{gap:7px}.st{font-size:11px;padding:5px 10px}.ro{gap:10px 34px;margin-top:22px;padding-top:16px}.ro b{font-size:16px}
+.verify-btn{margin-top:16px;background:#59d6a01b;border-color:#59d6a077;color:#bcf5d8;font-weight:650}.verify-btn:hover{background:#59d6a02b;border-color:var(--ok)}
+.g2{grid-template-columns:minmax(0,1.45fr) minmax(320px,.8fr);gap:18px}.stack{gap:18px}#camSec{padding:18px}canvas{border-radius:12px;box-shadow:0 0 0 1px #35505e;aspect-ratio:4/3}.cap{font-size:12px;line-height:1.5}.tag{border-radius:6px}.plain{padding:16px 2px 0}table{border-collapse:separate;border-spacing:0}td,th{padding:7px 12px 7px 0}#det{gap:9px 16px}
+.activity-card{padding:18px 22px}.section-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.section-heading h2{margin:0}.section-heading .eyebrow{margin-bottom:4px}#log{max-height:150px;overflow:auto;font-size:12px}#log div{padding:7px 0;border-bottom:1px solid #263b4877;font-family:var(--mono)}
+@media(max-width:1120px){header{display:grid;grid-template-columns:1fr}.ctl{justify-content:flex-start;max-width:none}}
+@media(max-width:900px){.app{grid-template-columns:1fr}aside{padding:8px 10px}.brand{display:none}nav a{padding:9px 10px}header{padding:16px 16px 0}.ctl{gap:9px}main{padding:14px 16px 96px}#verdict,.g2{grid-template-columns:1fr}#verdict{padding:22px 20px}.connect-group{border-right:0;padding-right:0}.action-group{width:100%}.action-group button{flex:1 1 auto}input{width:min(48vw,220px)}#toast{bottom:84px;right:12px}}
+@media(max-width:540px){.connect-group{width:100%}.connect-group input{flex:1;min-width:0}.connect-group button{flex:none}.ro{gap:12px 22px}.ro>div{min-width:42%}.section-heading{align-items:flex-start;flex-direction:column;gap:4px}#cmdAck{display:none}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-ov" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v4h-7zM14 11h7v10h-7zM3 14h7v7H3z"/></symbol>
+<symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+<symbol id="i-det" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></symbol>
+<symbol id="i-lim" viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></symbol>
+<symbol id="i-chk" viewBox="0 0 24 24"><path d="M4 6l2 2 3-3M4 14l2 2 3-3M12 7h8M12 15h8"/></symbol></defs></svg>
+<div class="app">
+<aside>
+  <div class="brand"><svg class="mk" viewBox="0 0 24 24"><path d="M5 20h8M9 20v-7l6-7 3 3"/><circle cx="19" cy="9" r="1.5"/></svg>Sorting cell</div>
+  <nav aria-label="Sections">
+    <a href="#verdict" class="on" title="Task state and workflow"><svg class="ic"><use href="#i-ov"/></svg><span>Overview</span></a>
+    <a href="#camSec" title="Live camera"><svg class="ic"><use href="#i-cam"/></svg><span>Camera</span></a>
+    <a href="#detSec" title="Detection and joints"><svg class="ic"><use href="#i-det"/></svg><span>Perception</span></a>
+
+    <a href="#activitySec" title="Recent task activity"><svg class="ic"><use href="#i-chk"/></svg><span>Activity</span></a>
+  </nav>
+</aside>
+<div class="col">
+<header>
+  <div><h1>Sorting workcell</h1><p>Live status · camera · color sorting</p></div>
+  <div class="ctl">
+    <div class="connect-group"><span id="conn" class="pill">Not connected</span><input id="url" value="ws://localhost:9090" aria-label="rosbridge address"><button id="btnConn">Connect</button></div>
+    <div class="action-group"><button id="btnDemo" aria-pressed="false">Demo preview</button><button id="btnStart" class="cmdStart" disabled>Start cycle</button><button id="btnStop" class="cmdStop" disabled title="Finish the current cycle, then hold">Hold after cycle</button><button id="btnEstop" class="cmdEstop" disabled title="Software trajectory cancel; not a hardware safety stop">Software stop</button><button id="btnReset" class="cmdReset" disabled>Reset fault</button></div>
+    <span id="cmdAck" class="cmd-status" aria-live="polite">Ready</span>
+  </div>
+</header>
+<main>
+  <div id="demoBanner">Demo mode: everything below is simulated in this page. Nothing here comes from the robot or Gazebo.</div>
+
+  <section id="verdict" class="card">
+    <div>
+      <p class="eyebrow">CURRENT CYCLE</p><p id="vText" aria-live="polite">Not connected</p><p id="vSub"></p><div id="stages"></div><button id="verifyBtn" class="verify-btn" style="display:none">I verified the object landed in its matching bin</button>
+      <div class="ro">
+        <div title="Latest /detected_object confidence"><span>Detection confidence</span><b id="rConf">none</b></div>
+        <div title="Time since the last camera frame"><span>Last camera frame</span><b id="rCam">none</b></div>
+        <div title="Time since the last /sorting/status"><span>Last task status</span><b id="rStat">none</b></div>
+        <div title="Whether new sorting cycles are allowed"><span>Task control</span><b id="rArmed">unknown</b></div>
+      </div>
+    </div>
+    
+  </section>
+
+  <div class="g2">
+    <section class="card" id="camSec">
+      <h2>Camera <span id="camAge" class="cap"></span></h2>
+      <canvas id="cam" width="640" height="480"></canvas>
+      <p class="cap">Dashed box: the only region the detector reads. Cross-hair: last detected centre, in image pixels.</p>
+    </section>
+    <div class="stack" id="detSec">
+      <section class="card"><h2>Perception result <span class="tag">LIVE DETECTION</span></h2><dl id="det"></dl></section>
+      <section class="card plain"><h2>Joint positions</h2><table id="joints"></table></section>
+    </div>
+  </div>
+
+  <section class="card activity-card" id="activitySec"><div class="section-heading"><div><p class="eyebrow">RECENT EVENTS</p><h2>Task activity</h2></div><span class="cap">State changes and failures from ROS</span></div><div id="log"><div class="cap">Waiting for task updates.</div></div></section>
+</main>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+const $=id=>document.getElementById(id);
+const STAGES=['IDLE','DETECT','PICK','GRIP','CLASSIFY','PLACE','RELEASE','RETURN_HOME','COMPLETE'];
+const S={ws:null,demo:false,status:null,statusAt:0,det:null,detAt:0,frameAt:0,img:null,log:[],verified:false,joints:{},rt:0,timer:0,pendingCommand:null,ackTimer:0};
+const age=t=>t?(Date.now()-t)/1000:Infinity;
+
+/* ---------- rosbridge (plain JSON protocol, no library needed) ---------- */
+function setConn(t,cls){const c=$('conn');c.textContent=t;c.className='pill '+(cls||'')}
+function sub(topic,type,throttle){S.ws.send(JSON.stringify({op:'subscribe',topic,type,throttle_rate:throttle,queue_length:1}))}
+function connect(){
+  if(S.demo)return;clearTimeout(S.rt);if(S.ws){S.ws.onclose=null;S.ws.close()}
+  S.status=null;S.statusAt=0;updateCommandControls();
+  let ws;try{ws=new WebSocket($('url').value)}catch(e){setConn('Bad address');return}
+  S.ws=ws;setConn('Connecting…');
+  ws.onopen=()=>{ws._o=1;setConn('Connected to rosbridge','open');toast('Connected to rosbridge');
+    sub('/sorting/status','std_msgs/msg/String',0);sub('/detected_object','std_msgs/msg/String',0);sub('/sorting/command_ack','std_msgs/msg/String',0);
+    sub('/joint_states','sensor_msgs/msg/JointState',250);sub('/camera/image_raw','sensor_msgs/msg/Image',250)};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}if(m.op==='publish')onMsg(m.topic,m.msg)};
+  ws.onclose=()=>{if(ws._o)toast('Connection to rosbridge lost. Retrying.');setConn('Disconnected, retrying…');S.rt=setTimeout(connect,2000)};
+  ws.onerror=()=>ws.close();
+}
+function onMsg(topic,msg){
+  if(topic==='/sorting/status'||topic==='/detected_object'){
+    let d;try{d=JSON.parse(msg.data)}catch(x){return}
+    if(topic==='/sorting/status')onStatus(d);else{S.det=d;S.detAt=Date.now()}
+  }else if(topic==='/sorting/command_ack'){let a;try{a=JSON.parse(msg.data)}catch(x){return}if(a.id===S.pendingCommand){clearTimeout(S.ackTimer);S.pendingCommand=null;$('cmdAck').textContent=(a.accepted?'Accepted: ':'Rejected: ')+(a.note||a.cmd);$('cmdAck').className='pill '+(a.accepted?'open':'demo');toast($('cmdAck').textContent);updateCommandControls()}}
+  else if(topic==='/joint_states'){(msg.name||[]).forEach((n,i)=>S.joints[n]=msg.position[i])}
+  else if(topic==='/camera/image_raw')onFrame(msg);
+}
+function onStatus(d){
+  const prev=S.status&&S.status.state;S.status=d;S.statusAt=Date.now();
+  if(d.state==='PICK'&&prev!=='PICK')S.verified=false;
+  if(d.state!==prev){toastFor(d);S.log.unshift({t:new Date(),d});S.log.length=Math.min(S.log.length,40)}
+}
+function onFrame(m){
+  const ch=/a8$/.test(m.encoding)?4:3,bgr=/^bgr/.test(m.encoding);
+  if(!/^(rgb|bgr)(a?)8$/.test(m.encoding)){return}
+  const raw=atob(m.data),w=m.width,h=m.height,step=m.step||w*ch;
+  const cv=$('cam');if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}
+  const ctx=cv.getContext('2d');if(!ctx)return;
+  const im=ctx.createImageData(w,h),o=im.data;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*step+x*ch,j=(y*w+x)*4;
+    o[j]=raw.charCodeAt(i+(bgr?2:0));o[j+1]=raw.charCodeAt(i+1);o[j+2]=raw.charCodeAt(i+(bgr?0:2));o[j+3]=255}
+  S.img=im;S.frameAt=Date.now();
+}
+
+/* ---------- what do we actually know? ---------- */
+function verdict(){
+  if(!S.demo&&!(S.ws&&S.ws.readyState===1))return['','Not connected','Start rosbridge (see README), then press Connect. Or use Demo mode to preview the layout.'];
+  if(!S.status)return['warn','Connected, but no task status yet','Nothing has arrived on /sorting/status. Is the task_manager node running? It normally publishes once a second.'];
+  const st=S.status,silent=age(S.statusAt)>3.5;
+  if(silent)return['warn','Task manager has gone quiet','No status for '+Math.round(age(S.statusAt))+' s. Last known state: '+st.state+'. The task_manager node may have stopped.'];
+  if(st.state==='FAILED'){
+    const unsup=/no calibrated/i.test(st.failure||'');
+    return unsup?['warn','Unsupported colour: not sorted','Detected '+(st.object_label||'an object')+', but no matching route is configured. Nothing was placed.']
+      :['bad','Task failed',(st.failure||'No reason given.')+' The task manager stays FAILED until Reset is accepted.'];}
+  if(st.state==='COMPLETE'){const bin=(st.object_label||'red_object').replace('_object','');return S.verified?['ok','Sort confirmed by you','You confirmed the cube landed in the '+bin+' bin for this run.']
+    :['warn','Motion sequence finished. Physical sort not verified','Every motion command reported success. That does not prove the cube was gripped or dropped in the bin. Check the Gazebo window.'];}
+  if(st.state==='IDLE'||st.state==='DETECT')return['live','Waiting for an object in the pickup region','The task manager starts a pick only after a detection with confidence of at least 0.65.'];
+  return['live','Running: '+st.state,'Object: '+(st.object_label||'unknown')+'. Stage changes only after each motion reports success.'];
+}
+function render(){
+  const [cls,t,sub]=verdict();$('verdict').className='card '+cls;if($('vText').textContent!==t)$('vText').textContent=t;$('vSub').textContent=sub;
+  const cur=S.status&&S.status.state,idx=STAGES.indexOf(cur),failed=cur==='FAILED';
+  let html=STAGES.map((s,i)=>`<span class="st ${s===cur?'now':(idx>=0&&i<idx?'done':'')}">${s}</span>`).join('');
+  if(failed)html+=`<span class="st fail">FAILED</span>`;
+  $('stages').innerHTML=html;
+  const d=S.det,fresh=d&&age(S.detAt)<1.5;
+  $('det').innerHTML=fresh?`<dt>Colour</dt><dd>${esc(d.label)}</dd><dt>Centre</dt><dd>x ${d.x}, y ${d.y} <span class="tag">image pixels</span></dd><dt>Confidence</dt><dd>${(+d.confidence).toFixed(2)}</dd><dt>Pixels sampled</dt><dd>${d.pixels}</dd><dt>Image size</dt><dd>${d.image_width} × ${d.image_height}</dd>`
+    :`<dt>Colour</dt><dd>No detection</dd><dt></dt><dd class="cap">The detector stays silent when nothing clear is in view. That is normal on an empty frame.${d?' Last seen '+Math.round(age(S.detAt))+' s ago.':''}</dd>`;
+  const jn=Object.keys(S.joints);
+  $('joints').innerHTML=jn.length?'<tr><th>Joint</th><th>Position</th></tr>'+jn.map(n=>`<tr><td>${esc(n)}</td><td>${S.joints[n].toFixed(3)} ${/finger/.test(n)?'m':'rad'}</td></tr>`).join(''):'<tr><td class="cap">No /joint_states yet.</td></tr>';
+  drawCam(fresh);
+  $('log').innerHTML=S.log.length?S.log.map(e=>`<div>${e.t.toLocaleTimeString()} &nbsp; <b>${esc(e.d.state)}</b>${e.d.object_label?' · '+esc(e.d.object_label):''}${e.d.failure?' · '+esc(e.d.failure):''}</div>`).join(''):'<div class="cap">Nothing received yet.</div>';
+  const b=$('verifyBtn');if(b)b.style.display=(cur==='COMPLETE'&&!S.verified)?'':'none';
+  $('rArmed').textContent=S.status?(S.status.armed?'armed':'disarmed'):'unknown';
+  updateCommandControls();
+}
+function drawCam(fresh){
+  const cv=$('cam'),ctx=cv.getContext('2d');if(!ctx)return;const w=cv.width,h=cv.height;
+  if(S.img&&age(S.frameAt)<5)ctx.putImageData(S.img,0,0);
+  else{ctx.fillStyle='#2b3138';ctx.fillRect(0,0,w,h);ctx.fillStyle='#aab6c2';ctx.font='20px sans-serif';ctx.textAlign='center';
+    ctx.fillText(S.demo?'No demo frame':'No frames on /camera/image_raw',w/2,h/2-8);
+    ctx.font='15px sans-serif';ctx.fillText(S.demo?'':'The camera is a Gazebo topic: start the camera bridge (README step 3).',w/2,h/2+18)}
+  $('camAge').textContent=S.frameAt?'(frame '+age(S.frameAt).toFixed(1)+' s old)':'';
+  ctx.save();ctx.setLineDash([8,6]);ctx.strokeStyle='#ffd166';ctx.lineWidth=2;
+  ctx.strokeRect(w*.57,h*.36,w*.16,h*.28);ctx.restore();
+  if(fresh&&S.det.coordinate_frame==='image_pixels'){ctx.strokeStyle='#00e0ff';ctx.lineWidth=2;const x=S.det.x*w/(S.det.image_width||w),y=S.det.y*h/(S.det.image_height||h);
+    ctx.beginPath();ctx.moveTo(x-18,y);ctx.lineTo(x+18,y);ctx.moveTo(x,y-18);ctx.lineTo(x,y+18);ctx.stroke();ctx.strokeRect(x-12,y-12,24,24)}
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- dashboard controls over rosbridge ---------- */
+function updateCommandControls(){
+  const live=!S.demo&&S.ws&&S.ws.readyState===1&&S.status;
+  const failed=S.status&&S.status.state==='FAILED';
+  const pending=!!S.pendingCommand;
+  $('btnStart').disabled=!live||failed||pending||!!S.status.armed;
+  $('btnStop').disabled=!live||failed||pending||!S.status.armed;
+  $('btnEstop').disabled=!live||failed||pending;
+  $('btnReset').disabled=!live||!failed||pending;
+}
+function sendCommand(cmd){
+  if(S.demo||!S.ws||S.ws.readyState!==1){toast('Connect to the live ROS system before sending a command.');return}
+  if(cmd==='estop'&&!confirm('This requests cancellation of the current ROS trajectory. It is not a hardware safety stop. Continue only in a safe simulation?'))return;
+  const id='ui-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+  S.pendingCommand=id;$('cmdAck').textContent='Waiting for '+cmd+' acknowledgement…';$('cmdAck').className='pill demo';updateCommandControls();
+  try{S.ws.send(JSON.stringify({op:'publish',topic:'/sorting/command',type:'std_msgs/msg/String',msg:{data:JSON.stringify({id,cmd})}}))}
+  catch(e){S.pendingCommand=null;$('cmdAck').textContent='Send failed';$('cmdAck').className='pill demo';toast('Could not send command: '+e.message);return}
+  clearTimeout(S.ackTimer);S.ackTimer=setTimeout(()=>{if(S.pendingCommand===id){S.pendingCommand=null;$('cmdAck').textContent='No acknowledgement received';$('cmdAck').className='pill demo';toast('No command acknowledgement. Check task_manager and rosbridge.')}},4000);
+}
+
+/* ---------- demo mode: scripted, clearly labelled as simulated ---------- */
+const DEMO=[
+  ['IDLE','',0],['DETECT','',0],['DETECT','red_object',1],['PICK','red_object',1],['GRIP','red_object',1],['CLASSIFY','red_object',1],['PLACE','red_object',1],['PLACE','red_object',1],['RELEASE','red_object',1],['RETURN_HOME','red_object',1],['COMPLETE','red_object',0],
+  ['DETECT','',0],['DETECT','blue_object',1],['PICK','blue_object',1],['GRIP','blue_object',1],['CLASSIFY','blue_object',1],['PLACE','blue_object',1],['PLACE','blue_object',1],['RELEASE','blue_object',1],['RETURN_HOME','blue_object',1],['COMPLETE','blue_object',0],
+  ['DETECT','',0],['DETECT','green_object',1],['PICK','green_object',1],['GRIP','green_object',1],['CLASSIFY','green_object',1],['PLACE','green_object',1],['PLACE','green_object',1],['RELEASE','green_object',1],['RETURN_HOME','green_object',1],['COMPLETE','green_object',0]];
+let dstep=0;
+function demoTick(){
+  const [state,label,det]=DEMO[dstep%DEMO.length];dstep++;
+  const failed=state==='FAILED';
+  onStatus({state,object_label:label||null,failure:failed?'No calibrated route for this colour':null});
+  S.statusAt=Date.now();
+  const lab=label||'red_object';
+  if(det){S.det={label:lab,x:320,y:351,confidence:0.94,pixels:55,coordinate_frame:'image_pixels',image_width:640,image_height:480};S.detAt=Date.now()}
+  const j=['joint1','joint2','joint3','joint4','joint5','joint6','gripper_left_finger_joint','gripper_right_finger_joint'];
+  const p=/PICK|GRIP|CLASSIFY/.test(state)?[0,1.09,1.24,0,0,0,.03,.03]:/PLACE|RELEASE|COMPLETE/.test(state)?[-.2,.1,-.1,.1,.1,-.2,/RELEASE|COMPLETE/.test(state)?0:.03,/RELEASE|COMPLETE/.test(state)?0:.03]:[0,0,0,0,0,0,0,0];
+  j.forEach((n,i)=>S.joints[n]=p[i]);
+  const c=document.createElement('canvas');c.width=640;c.height=480;const x=c.getContext('2d');
+  if(x){x.fillStyle='#b9bec4';x.fillRect(0,0,640,480);x.fillStyle='#d33';x.fillRect(414,230,110,150);x.fillStyle='#33d';x.fillRect(117,230,102,150);x.fillStyle='#2c2';x.fillRect(262,230,100,150);
+    x.fillStyle=lab==='green_object'?'#2c2':lab==='blue_object'?'#33d':'#e00';x.fillRect(308,340,24,24);S.img=x.getImageData(0,0,640,480);S.frameAt=Date.now()}
+}
+function setDemo(on){
+  S.demo=on;$('btnDemo').setAttribute('aria-pressed',on);$('btnDemo').textContent=on?'Stop demo':'Demo preview';
+  $('demoBanner').style.display=on?'block':'none';clearInterval(S.timer);
+  Object.assign(S,{status:null,det:null,img:null,frameAt:0,log:[],joints:{}});
+  if(on){clearTimeout(S.rt);if(S.ws){S.ws.onclose=null;S.ws.close();S.ws=null}setConn('Demo (simulated)','demo');dstep=0;demoTick();S.timer=setInterval(demoTick,1200)}
+  else{setConn('Not connected');connect()}
+}
+
+
+/* ---------- compact live readouts ---------- */
+function readouts(){const d=S.det,f=d&&age(S.detAt)<1.5;
+  $('rConf').textContent=f?(+d.confidence).toFixed(2):'none';$('rCam').textContent=S.frameAt?age(S.frameAt).toFixed(1)+' s':'none';$('rStat').textContent=S.statusAt?age(S.statusAt).toFixed(1)+' s':'none'}
+const _render=render;render=function(){_render();readouts()};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),4000)}
+function toastFor(d){if(d.state==='FAILED')toast('Task failed: '+(d.failure||'no reason given'));else if(d.state==='COMPLETE')toast('Motion sequence finished. Check Gazebo before calling it a sort.')}
+document.querySelectorAll('main>*').forEach((e,i)=>e.style.setProperty('--i',i));
+if('IntersectionObserver' in window){const L=[...document.querySelectorAll('nav a')],io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)L.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-30% 0px -60% 0px'});L.forEach(a=>io.observe($(a.getAttribute('href').slice(1))))}
+$('btnConn').onclick=connect;$('btnDemo').onclick=()=>setDemo(!S.demo);
+$('btnStart').onclick=()=>sendCommand('start');$('btnStop').onclick=()=>sendCommand('stop');$('btnEstop').onclick=()=>sendCommand('estop');$('btnReset').onclick=()=>sendCommand('reset');
+$('verifyBtn').onclick=()=>{S.verified=true;render()};render();setInterval(render,250);
+</script></body></html>

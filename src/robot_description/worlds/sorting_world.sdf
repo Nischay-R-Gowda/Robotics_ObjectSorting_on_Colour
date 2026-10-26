@@ -1,0 +1,378 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="sorting_world">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors"/>
+
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <direction>-0.5 0.2 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+
+      <link name="ground">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>20 20</size>
+            </plane>
+          </geometry>
+        </collision>
+
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>20 20</size>
+            </plane>
+          </geometry>
+
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Simulated RGB camera for object perception -->
+    <model name="sorting_camera">
+      <static>true</static>
+
+      <pose>0.5 0.0 2.0 0 1.57079632679 1.57079632679</pose>
+
+      <link name="camera_link">
+
+        <sensor name="rgb_camera" type="camera">
+          <always_on>true</always_on>
+          <update_rate>10</update_rate>
+          <visualize>true</visualize>
+
+          <topic>/camera/image_raw</topic>
+
+          <camera>
+            <horizontal_fov>1.047</horizontal_fov>
+
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+
+            <clip>
+              <near>0.1</near>
+              <far>10.0</far>
+            </clip>
+          </camera>
+        </sensor>
+
+      </link>
+    </model>
+
+<model name="blue_object">
+  <static>false</static>
+  <pose>0.85 0 0.05 0 0 0</pose>
+
+  <link name="link">
+    <inertial>
+      <mass>0.1</mass>
+      <inertia>
+        <ixx>0.0001</ixx>
+        <iyy>0.0001</iyy>
+        <izz>0.0001</izz>
+      </inertia>
+    </inertial>
+
+    <collision name="collision">
+      <geometry>
+        <box>
+          <size>0.07 0.07 0.07</size>
+        </box>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <geometry>
+        <box>
+          <size>0.07 0.07 0.07</size>
+        </box>
+      </geometry>
+      <material>
+        <ambient>0 0 1 1</ambient>
+        <diffuse>0 0 1 1</diffuse>
+      </material>
+    </visual>
+  </link>
+</model>
+
+  
+  <!-- ==================== SORTING BINS ==================== -->
+
+  <!-- RED BIN -->
+
+  <!-- BLUE BIN -->
+
+
+  <!-- RED SORTING BIN -->
+  <model name="red_sorting_bin">
+    <static>true</static>
+    <pose>0.825 0.45 0.02 0 0 0</pose>
+
+    <!-- Floor -->
+    <link name="floor">
+      <visual name="visual">
+        <geometry><box><size>0.30 0.30 0.04</size></box></geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.30 0.04</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Back wall -->
+    <link name="back_wall">
+      <pose>0 0.13 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Front wall -->
+    <link name="front_wall">
+      <pose>0 -0.13 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Left wall -->
+    <link name="left_wall">
+      <pose>-0.13 0 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Right wall -->
+    <link name="right_wall">
+      <pose>0.13 0 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+      </collision>
+    </link>
+  </model>
+
+  <!-- BLUE SORTING BIN -->
+  <model name="blue_sorting_bin">
+    <static>true</static>
+    <pose>0.825 -0.45 0.02 0 0 1.570796</pose>
+
+    <!-- Floor -->
+    <link name="floor">
+      <visual name="visual">
+        <geometry><box><size>0.25 0.25 0.04</size></box></geometry>
+        <material>
+          <ambient>0 0 1 1</ambient>
+          <diffuse>0 0 1 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.25 0.25 0.04</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Back wall -->
+    <link name="back_wall">
+      <pose>0 0.13 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.25 0.04 0.15</size></box></geometry>
+        <material>
+          <ambient>0 0 1 1</ambient>
+          <diffuse>0 0 1 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.25 0.04 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Front wall -->
+    <link name="front_wall">
+      <pose>0 -0.13 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.25 0.04 0.15</size></box></geometry>
+        <material>
+          <ambient>0 0 1 1</ambient>
+          <diffuse>0 0 1 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.25 0.04 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Left wall -->
+    <link name="left_wall">
+      <pose>-0.13 0 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+        <material>
+          <ambient>0 0 1 1</ambient>
+          <diffuse>0 0 1 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Right wall -->
+    <link name="right_wall">
+      <pose>0.13 0 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+        <material>
+          <ambient>0 0 1 1</ambient>
+          <diffuse>0 0 1 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+      </collision>
+    </link>
+  </model>
+
+
+  <!-- GREEN SORTING BIN: same 0.30 m square opening and 0.17 m rim as red bin -->
+  <model name="green_sorting_bin">
+    <static>true</static>
+    <pose>0.45 -0.75 0.02 0 0 0</pose>
+
+    <!-- Floor -->
+    <link name="floor">
+      <visual name="visual">
+        <geometry><box><size>0.30 0.30 0.04</size></box></geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.30 0.04</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Back wall -->
+    <link name="back_wall">
+      <pose>0 0.13 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Front wall -->
+    <link name="front_wall">
+      <pose>0 -0.13 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.04 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Left wall -->
+    <link name="left_wall">
+      <pose>-0.13 0 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- Right wall -->
+    <link name="right_wall">
+      <pose>0.13 0 0.095 0 0 0</pose>
+      <visual name="visual">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <diffuse>0 1 0 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry><box><size>0.04 0.22 0.15</size></box></geometry>
+      </collision>
+    </link>
+  </model>
+
+</world>
+</sdf>
